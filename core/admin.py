@@ -1,9 +1,15 @@
 from django.contrib import admin
-from .models import RfidCard, EntryLog
+from .models import RfidCard, EntryLog, CardHolder
+
+
+@admin.register(CardHolder)
+class CardHolderAdmin(admin.ModelAdmin): 
+    list_display = ('uid', 'full_name')
+    search_fields = ('uid', 'full_name')
 
 @admin.register(RfidCard)
 class RfidCardAdmin(admin.ModelAdmin):
-    list_display = ('uid', 'expiry_date', 'valid', 'is_valid_display')
+    list_display = ('uid', 'expiry_date', 'user', 'valid', 'is_valid_display')
     list_filter = ('valid', 'expiry_date')
     search_fields = ('uid',)
 

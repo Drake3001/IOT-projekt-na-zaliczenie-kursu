@@ -1,16 +1,25 @@
 from django.db import models
 from django.utils import timezone
 
+
+class CardHolder(models.Model): 
+    uid = models.CharField(max_length=50, unique=True, verbose_name= "UID Użytkownika")
+    full_name = models.CharField(max_length=50, verbose_name="Imię i Nazwisko")
+
+    def __str__(self):
+        return f"{self.full_name} ({self.uid})"
 class RfidCard(models.Model):
     uid = models.CharField(max_length=50, unique=True, verbose_name="UID Karty")
     expiry_date = models.DateTimeField(verbose_name="Ważna do")
+    user = models.ForeignKey(CardHolder, null = True, on_delete=models.SET_NULL, blank=True, verbose_name="Właściciel karty")
     valid = models.BooleanField(default=True)
 
-    def czy_wazna(self):
-        return self.valid and self.exipiry_date > timezone.now()
+    def is_valid(self):
+        return self.valid and self.expiry_date > timezone.now()
 
     def __str__(self):
-        return f"{self.uid}, {self.exipiry_date}, {self.valid}"
+        return f"{self.uid}, {self.expiry_date}, {self.valid}"
+
 
 class EntryLog(models.Model):
     class AccessStatus(models.TextChoices):
