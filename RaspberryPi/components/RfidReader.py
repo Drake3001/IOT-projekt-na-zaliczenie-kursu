@@ -2,50 +2,68 @@ from .HardwareComponent import HardwareComponent
 import RPi.GPIO as GPIO
 from config import * # pylint: disable=unused-wildcard-import
 from mfrc522 import MFRC522
-
+import threading
+import time
 
 class RfidReader(HardwareComponent): 
     
     def __init__(self):
-        super()
-        self.missed_reads_THRESHOLD = 4
-        self.Reader = MFRC522()
-        self.last_uid = None
-        self.missed_reads = 0 
+        super().__init__()
+        self.reader = MFRC522()
     
-    def initialize(self):
-        print("RFID Reader initialized")
-
-    def check_card(self): 
-        (status_req, TagType) = self.reader.MFRC522_Request(self.reader.PICC_REQIDL)
         
-        read_success = False
-        found_new_uid = None
+        self.last_scanned_uid = None
+        self._running = False
+        self._thread = None
+        self._lock = threading.Lock()
 
-        if status_req == self.reader.MI_OK:
-            (status_anti, uid) = self.reader.MFRC522_Anticoll()
+    def initialize(self):
+        print("RFID Reader initialized (Background Thread Mode)")
+        self._start_reading_thread()
 
-            if status_anti == self.reader.MI_OK:
-                read_success = True
-                self.missed_reads = 0 
-                current_uid_str = self.uid_to_string(uid)
+    def _start_reading_thread(self):
+        self._running = True
+        self._thread = threading.Thread(target=self._worker, daemon=True)
+        self._thread.start()
 
-                if current_uid_str != self.last_uid:                        
-                    self.last_uid = current_uid_str
-                    found_new_uid = current_uid_str 
+    def _worker(self):
+        last_uid_raw = None
+        
+        while self._running:
+            (status_req, TagType) = self.reader.MFRC522_Request(self.reader.PICC_REQIDL)
+            
+            if status_req == self.reader.MI_OK:
+                (status_anti, uid) = self.reader.MFRC522_Anticoll()
+                
+                if status_anti == self.reader.MI_OK:
+                    current_uid_str = self.uid_to_string(uid)
+                    
+                    if current_uid_str != last_uid_raw:
+                        last_uid_raw = current_uid_str
+                        
+                        with self._lock:
+                            self.last_scanned_uid = current_uid_str
+                            
                 else:
                     pass
+            else:
+                last_uid_raw = None
+            
+            time.sleep(0.05)
 
-        if not read_success:
-            self.missed_reads += 1
-            if self.missed_reads >= self.missed_reads_threshold:
-                self.last_uid = None
-                self.missed_reads = self.missed_reads_threshold 
-
-        return found_new_uid
+    def check_card(self): 
+        with self._lock:
+            if self.last_scanned_uid:
+                found = self.last_scanned_uid
+                self.last_scanned_uid = None 
+                return found
+            return None
     
     def uid_to_string(self, uid):
         return "-".join([str(x) for x in uid])
 
     def cleanup(self):
-        print('RFIDreader cleanup')
+        self._running = False 
+        if self._thread:
+            self._thread.join(timeout=1.0)
+        print('RFID thread stopped')
