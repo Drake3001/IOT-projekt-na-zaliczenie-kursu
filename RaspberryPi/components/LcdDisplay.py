@@ -48,7 +48,7 @@ class LcdDisplay(HardwareComponent):
         self._draw_screen("SYSTEM RFID", "Zbliz karte...", bg_color="BLUE")
 
     def show_registration_mode(self):
-        self._draw_screen("REJESTRACJA", "Czekam na nowa...", bg_color="PURPLE")
+        self._draw_screen("REJESTRACJA", bg_color="PURPLE")
 
     def show_verifying(self):
         self._draw_screen("WERYFIKACJA", "Prosze czekac...", bg_color="BLACK")
@@ -58,10 +58,17 @@ class LcdDisplay(HardwareComponent):
         self._draw_screen("DOSTEP", safe_name, bg_color="GREEN", text_color="BLACK")
 
     def show_access_denied(self, reason="Brak dostepu"):
-        self._draw_screen("ODMOWA", reason, bg_color="RED", text_color="WHITE")
+        self._draw_screen("ODMOWA", reason, bg_color="ORANGE", text_color="BLACK")
 
-    def show_new_card_detected(self, uid):
-        self._draw_screen("NOWA KARTA", f"UID: {uid}", bg_color="ORANGE", text_color="BLACK")
+    def show_new_card_detected(self):
+        self._draw_screen("NIEZNANA KARTA", bg_color="RED", text_color="BLACK")
+
+    def show_new_card_registration(self):
+        self._draw_screen("NOWA KARTA",  bg_color="GREEN", text_color="BLACK")
+
+    def show_card_extended_registration(self): 
+        self._draw_screen("ZNANA KARTA","Czas ważności wydłużony",  bg_color="BLUE", text_color="BLACK")
+
         
     def show_status(self, line1, line2):
         self._draw_screen(line1, line2)
