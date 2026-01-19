@@ -12,7 +12,6 @@
             <a href="{% url 'home' %}" class="btn btn-outline-dark mb-2">Wróć do Monitora Wejść</a>
             <h1>Karnety</h1>
         </div>
-        <a href="{% url 'start_register' %}" class="btn btn-primary btn-lg shadow">Rejestracja Nowego Karnetu</a>
     </div>
 
     <div class="card shadow-sm">
@@ -30,7 +29,7 @@
                 <tbody>
                     {% for card in cards %}
                     <tr>
-                        <td>{{ card.user.full_name|default:"-- Brak --" }}</td>
+                        <td>{{ card.user.full_name|default:"Brak" }}</td>
                         <td><code>{{ card.uid }}</code></td>
                         <td>{{ card.expiry_date|date:"d.m.Y" }}</td>
                         <td>
@@ -47,6 +46,20 @@
                             <a href="{% url 'block' card.id %}" class="btn btn-sm btn-outline-secondary">
                                 {% if card.valid %}Zablokuj{% else %}Odblokuj{% endif %}
                             </a>
+                            <button onclick="addUser('{{ card.id }}')" class="btn btn-sm btn-outline-primary">Użytkownik</button>
+                            <script>
+                                function addUser(cardId) {
+                                    let name = prompt("Podaj Imię i Nazwisko:");
+                                    if (name) {
+                                        let form = document.createElement('form');
+                                        form.method = 'POST';
+                                        form.action = `/card/add-user/${cardId}/`;
+                                        form.innerHTML = `{% csrf_token %}<input name="full_name" value="${name}">`;
+                                        document.body.appendChild(form);
+                                        form.submit();
+                                    }
+                                }
+                            </script>
                         </td>
                     </tr>
                     {% empty %}

@@ -34,8 +34,12 @@
                                 <span class="text-danger fw-bold">ODMOWA - karnet wygasł</span>
                             {% elif log.status == 'DENIED_INACTIVE' %}
                                 <span class="text-danger fw-bold">ODMOWA - karnet zablokowany</span>
-                            {% else %}
+                            {% elif log.status == 'DENIED_UNKNOWN' %}
                                 <span class="text-danger fw-bold">ODMOWA - karnet nieznany</span>
+                            {% elif log.status == 'UPDATED' %}
+                                <span class="text-success fw-bold">PRZEDŁUŻONO WAŻNOŚĆ</span>
+                            {% else %}
+                                <span class="text-success fw-bold">REJESTRACJA</span>
                             {% endif %}
                         </td>
                     </tr>

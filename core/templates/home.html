@@ -21,6 +21,17 @@
         
         h1 { font-size: 5rem; font-weight: bold; }
         h3 { font-size: 2rem; }
+
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+
+        .active-btn {
+            transform: scale(1.15);
+            font-weight: bold;
+            z-index: 10;
+            border-width: 3px;
+        }
     </style>
 </head>
 <body class="p-4">
@@ -38,6 +49,15 @@
 
     <div class="mt-4 d-flex justify-content-end p-3">
         <a href="{% url 'logout' %}" class="btn btn-danger btn-sm">Wyloguj</a>
+    </div>
+
+    <div class="mt-2 pt-4 border-top">
+        <div class="btn-group shadow-sm" role="group">
+            <a href="{% url 'change_mode' 'validation' %}" class="btn px-4 py-2 transition-all {% if current_mode == 'validation' %}btn-success shadow-lg active-btn{% else %}btn-outline-success{% endif %}">
+                Tryb Walidacji</a>
+            <a href="{% url 'change_mode' 'registration' %}" class="btn px-4 py-2 transition-all {% if current_mode == 'registration' %}btn-warning shadow-lg active-btn{% else %}btn-outline-warning{% endif %}">
+                Tryb Rejestracji</a>
+        </div>
     </div>
 </div>
 
@@ -57,18 +77,28 @@
                 const userText = document.getElementById('user-text');
 
                 if (diffSeconds < 10) {
-                    if (data.status === 'GRANTED') {
-                        monitor.className = 'monitor-box status-granted shadow';
-                        decisionText.innerText = 'PRZYZNANO DOSTĘP';
-                        userText.innerText = `Użytkownik: ${data.user}`;
+                    if (data.mode === "validation") {
+                        if (data.status === 'GRANTED') {
+                            monitor.className = 'monitor-box status-granted shadow';
+                            decisionText.innerText = 'PRZYZNANO DOSTĘP';
+                            userText.innerText = `Użytkownik: ${data.user}`;
+                        } else {
+                            monitor.className = 'monitor-box status-denied shadow';
+                            decisionText.innerText = 'ODMOWA DOSTĘPU';
+                            let reason = "Karnet wygasł";
+                            if(data.status === 'DENIED_INACTIVE') reason = "Karnet zablokowany";
+                            if(data.status === 'DENIED_UNKNOWN') reason = "Karnet nieznany";
+                            userText.innerText = reason;
+                        }
                     } else {
-                        monitor.className = 'monitor-box status-denied shadow';
-                        decisionText.innerText = 'ODMOWA DOSTĘPU';
-                        let reason = "Karnet wygasł";
-                        if(data.status === 'DENIED_INACTIVE') reason = "Karnet zablokowany";
-                        if(data.status === 'DENIED_UNKNOWN') reason = "Karnet nieznany";
-                        
-                        userText.innerText = reason;
+                        monitor.className = "monitor-box status-granted shadow"
+                        userText.innerText = `Karnet (UID): ${data.uid}`
+                        if (data.status === "REGISTERED") {
+                            decisionText.innerText = "ZAREJESTROWANO"
+                        }
+                        if (data.status === "UPDATED") {
+                            decisionText.innerText = "PRZEDŁUŻONO WAŻNOŚĆ"
+                        }
                     }
                 } else {
                     monitor.className = 'monitor-box status-idle shadow';

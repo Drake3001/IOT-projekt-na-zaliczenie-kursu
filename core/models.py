@@ -27,6 +27,8 @@ class EntryLog(models.Model):
         DENIED_EXPIRED = 'DENIED_EXPIRED', 'Denied (Expired)'
         DENIED_UNKNOWN = 'DENIED_UNKNOWN', 'Denied (Unknown Card)'
         DENIED_INACTIVE = 'DENIED_INACTIVE', 'Denied (Card Inactive)'
+        REGISTERED = 'REGISTERED', 'Registered (New Card)'
+        UPDATED = 'UPDATED', 'Updated'
 
     card = models.ForeignKey(RfidCard, on_delete=models.SET_NULL, null=True, blank=True)
     uid_raw = models.CharField(max_length=50, verbose_name="Odczytany UID")

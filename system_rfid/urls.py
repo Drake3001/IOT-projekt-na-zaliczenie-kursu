@@ -34,4 +34,6 @@ urlpatterns = [
     path('register/', views.start_register, name='start_register'),
     path('card/extend/<int:card_id>/', views.extend_validity, name='extend_validity'),
     path('card/block/<int:card_id>/', views.block_card, name='block'),
+    path('card/add-user/<int:card_id>/', views.add_user, name='add_user'),
+    path('change-mode/<str:mode>/', views.change_mode, name='change_mode'),
 ]
