@@ -1,11 +1,13 @@
 from .HardwareComponent import HardwareComponent
 from PIL import Image, ImageDraw, ImageFont
-import lib.oled.SSD1331 as SSD1331  # Import sterownika z Twoich laboratoriów
+import lib.oled.SSD1331 as SSD1331
+import os
 
 class LcdDisplay(HardwareComponent):
     
     def __init__(self):
         super().__init__()
+        os.system('sudo systemctl stop ip-oled.service')
         self.disp = SSD1331.SSD1331()
         self.width = self.disp.width
         self.height = self.disp.height
