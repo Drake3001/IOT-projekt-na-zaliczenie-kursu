@@ -17,7 +17,23 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+import core.views as views
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path('admin/', admin.site.urls),
+
+    path('logout/', views.logout_worker, name='logout'),
+
+    path('', views.home, name='home'),
+    
+    path('cards/', views.card_list, name='card_list'),
+    path('logs/', views.log_list, name='log_list'),
+    
+    path('api/latest/', views.api_latest_log, name='api_latest_log'),
+
+    path('register/', views.start_register, name='start_register'),
+    path('card/extend/<int:card_id>/', views.extend_validity, name='extend_validity'),
+    path('card/block/<int:card_id>/', views.block_card, name='block'),
+    path('card/add-user/<int:card_id>/', views.add_user, name='add_user'),
+    path('change-mode/<str:mode>/', views.change_mode, name='change_mode'),
 ]

@@ -39,6 +39,7 @@ def on_message(client, userdata, msg):
             status = payload.get("status", "")
             message = payload.get("message", "")
             access = payload.get("access", False)
+            print("X", access)
 
             print("\n" + "-"*40)
             print(f" [WYNIK: {msg_type}]")
@@ -71,7 +72,7 @@ try:
     print("="*50 + "\n")
     
     while True:
-        uid = input(f"[{current_mode}] Podaj UID (np. 11-22): ")
+        uid = input(f"[{current_mode}] Podaj UID (np. 1111): ")
         
         if uid.strip():
             payload = json.dumps({"uid": uid.strip()})
