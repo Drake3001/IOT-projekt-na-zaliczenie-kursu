@@ -85,15 +85,15 @@ def add_user(request, card_id):
     if request.method == 'POST':
         full_name = request.POST.get('full_name')
 
-    if card.user:
-        user = card.user
-        user.full_name = full_name
-        user.save()
-    else:
-        new_holder = CardHolder.objects.create(uid=card.uid, full_name=full_name)
-        card.user = new_holder
+        if card.user:
+            user = card.user
+            user.full_name = full_name
+            user.save()
+        else:
+            new_holder = CardHolder.objects.create(uid=card.uid, full_name=full_name)
+            card.user = new_holder
 
-    card.save()
+        card.save()
     return redirect('card_list')
 
 @staff_member_required

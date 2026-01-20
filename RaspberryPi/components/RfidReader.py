@@ -27,7 +27,7 @@ class RfidReader(HardwareComponent):
         self._thread.start()
 
     def _worker(self):
-        last_uid_raw = None
+
         missed_reads = 0
         last_uid_internal = None
 
@@ -43,18 +43,18 @@ class RfidReader(HardwareComponent):
                 if status_anti == self.reader.MI_OK:
                     read_success = True
                     current_uid_str = self.uid_to_string(uid)
-                    
-                    if read_success:
-                        missed_reads = 0
-                        if current_uid_str != last_uid_internal:
-                            last_uid_internal = current_uid_str
-                            with self._lock:
-                                self.last_scanned_uid = current_uid_str
-                    else:
-                        missed_reads += 1
-                        if missed_reads > self.threshold:
-                            last_uid_internal = None
-                            missed_reads = self.threshold
+            
+            if read_success:
+                missed_reads = 0
+                if current_uid_str != last_uid_internal:
+                    last_uid_internal = current_uid_str
+                    with self._lock:
+                        self.last_scanned_uid = current_uid_str
+            else:
+                missed_reads += 1
+                if missed_reads >= self.threshold:
+                    last_uid_internal = None
+                    missed_reads = self.threshold
             time.sleep(0.05)
 
     def check_card(self): 
@@ -72,4 +72,7 @@ class RfidReader(HardwareComponent):
         self._running = False 
         if self._thread:
             self._thread.join(timeout=1.0)
-        print('RFID thread stopped')
+            if self._thread.is_alive():
+                print('[RFID WARNING] Thread did not stop within timeout')
+            else:
+                print('RFID thread stopped')

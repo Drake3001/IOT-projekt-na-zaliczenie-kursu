@@ -1,4 +1,5 @@
 import paho.mqtt.client as mqtt
+import json
 class MqttClientWrapper:
 
     TOPIC_VERIFY = "reader/verification"      
@@ -7,9 +8,9 @@ class MqttClientWrapper:
     TOPIC_SET_MODE = "reader/mode"
 
 
-    def __init__(self, broker_address, response_callback, mode_callback):
+    def __init__(self, broker_address, message_callback, mode_callback):
         self.broker = broker_address
-        self.response_callback = response_callback
+        self.message_callback = message_callback
         self.mode_callback = mode_callback
         self.connected = False
 
@@ -39,6 +40,8 @@ class MqttClientWrapper:
                 self.client.publish(self.TOPIC_VERIFY, payload)
             except Exception as e:
                 print(f"[MQTT ERROR] Publish verify failed: {e}")
+        else:
+            print(f"[MQTT WARNING] Cannot publish verification - not connected to broker")
 
     def publish_registration(self, uid):
         if self.connected:
@@ -48,30 +51,8 @@ class MqttClientWrapper:
                 self.client.publish(self.TOPIC_REGISTER, payload)
             except Exception as e:
                 print(f"[MQTT ERROR] Publish register failed: {e}")
-
-    def _on_connect(self, client, userdata, flags, rc, properties=None):
-        if rc == 0:
-            print("[MQTT] Połączono z sukcesem!")
-            self.connected = True
-            client.subscribe(self.TOPIC_RESPONSE)
         else:
-            print(f"[MQTT] Błąd połączenia, kod: {rc}")
-            self.connected = False
-
-    def _on_message(self, client, userdata, msg):
-        try:
-            payload_str = msg.payload.decode('utf-8')
-            data = json.loads(payload_str)
-            
-            print(f"[MQTT] Otrzymano odpowiedź: {data}")
-
-            if self.callback:
-                self.callback(data)
-                
-        except json.JSONDecodeError:
-            print("[MQTT ERROR] Otrzymano błędny JSON")
-        except Exception as e:
-            print(f"[MQTT ERROR] Błąd przetwarzania wiadomości: {e}")
+            print(f"[MQTT WARNING] Cannot publish registration - not connected to broker")
     
     def _on_connect(self, client, userdata, flags, rc, properties=None):
         if rc == 0:
@@ -93,8 +74,8 @@ class MqttClientWrapper:
                     self.mode_callback(new_mode)
 
             elif msg.topic == self.TOPIC_RESPONSE:
-                if self.response_callback:
-                    self.response_callback(data)
+                if self.message_callback:
+                    self.message_callback(data)
 
         except json.JSONDecodeError:
             print(f"[MQTT ERROR] Invalid JSON received on {msg.topic}")

@@ -56,6 +56,7 @@ class AccessController():
             self.rfid.cleanup()
             self.lcd.cleanup()
             self.buzzer.cleanup()
+            self.mqtt.disconnect()
             GPIO.cleanup()
 
     def handle_mode_change(self, new_mode):
@@ -88,12 +89,12 @@ class AccessController():
                 
             else:
                 print(f" -> Odmowa: {message}")
-                if status == 'DENIED_INACTIVE' or 'DENIED_EXPIRED': 
+                if status in  ['DENIED_INACTIVE', 'DENIED_EXPIRED']: 
                     self.lcd.show_access_denied(message)
                 else: 
                     self.lcd.show_new_card_detected()
                 self.buzzer.beep_error()
-        if msg_type == "REGISTRATION_RESULT":
+        elif msg_type == "REGISTRATION_RESULT":
             if status == "CREATED":
                 print(" -> Nowa karta dodana")
                 self.lcd.show_new_card_registration() 
