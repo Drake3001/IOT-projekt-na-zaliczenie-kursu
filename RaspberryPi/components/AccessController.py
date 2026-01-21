@@ -7,6 +7,7 @@ from .RfidReader import RfidReader
 from .LcdDisplay import LcdDisplay
 from .BuzzerComp import Buzzer
 from .MqttClient import MqttClientWrapper
+from .LedController import LedController
 
 class AccessController():
     MODE_VALIDATION = "VALIDATION"
@@ -17,6 +18,7 @@ class AccessController():
         self.rfid = RfidReader()
         self.lcd = LcdDisplay()
         self.buzzer = Buzzer()
+        self.leds = LedController()
         BROKER_IP = "192.168.1.XX" 
         self.mqtt = MqttClientWrapper(broker_address=BROKER_IP, message_callback=self.handle_server_response, mode_callback=self.handle_mode_change)      
         self.initialize()
@@ -26,6 +28,7 @@ class AccessController():
         self.rfid.initialize()
         self.lcd.initialize()
         self.buzzer.initialize()
+        self.leds.initialize()
         self.mqtt.connect()
         
         self.lcd.show_welcome()
@@ -43,6 +46,7 @@ class AccessController():
                     self.is_busy= True; 
                     print(f"[Karta] Wykryto UID: {uid}")
                     self.buzzer.beep_input()
+                    self.leds.show_card_reading()
                     self.lcd.show_verifying()
                     if self.current_mode == self.MODE_VALIDATION:
                         self.mqtt.publish_verification(uid)
@@ -56,6 +60,7 @@ class AccessController():
             self.rfid.cleanup()
             self.lcd.cleanup()
             self.buzzer.cleanup()
+            self.leds.cleanup()
             self.mqtt.disconnect()
             GPIO.cleanup()
 
@@ -86,6 +91,7 @@ class AccessController():
                 print(f" -> Przyznano dostęp: {message}")            
                 self.lcd.show_access_granted(message)
                 self.buzzer.beep_success()
+                self.leds.show_confirmed()
                 
             else:
                 print(f" -> Odmowa: {message}")
@@ -94,19 +100,23 @@ class AccessController():
                 else: 
                     self.lcd.show_new_card_detected()
                 self.buzzer.beep_error()
+                self.leds.show_rejected()
         elif msg_type == "REGISTRATION_RESULT":
             if status == "CREATED":
                 print(" -> Nowa karta dodana")
                 self.lcd.show_new_card_registration() 
                 self.buzzer.beep_success()
+                self.leds.show_confirmed()
             elif status == "UPDATED":
                 print(" -> Karta zaktualizowana")
                 self.lcd.show_card_extended_registration() 
                 self.buzzer.beep_success()
+                self.leds.show_confirmed()
             else:
                 print(" -> Błąd rejestracji")
                 self.lcd.show_access_denied("Blad zapisu DB")
                 self.buzzer.beep_error()
+                self.leds.show_rejected()
         else:
             print(f"Nieznany typ wiadomości: {msg_type}")
         self._reset_state_after_delay(2.0)
